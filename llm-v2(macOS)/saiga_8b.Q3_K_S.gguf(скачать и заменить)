@@ -1,0 +1,9 @@
+Ссылка для скачивания.
+https://huggingface.co/IlyaGusev/saiga_yandexgpt_8b_gguf/resolve/main/saiga_yandexgpt_8b.Q3_K_M.gguf?download=true
+
+или 
+
+wget https://huggingface.co/IlyaGusev/saiga_yandexgpt_8b_gguf/resolve/main/saiga_yandexgpt_8b.Q3_K_M.gguf
+
+
+ 
