@@ -1,0 +1,48 @@
+### Краткая инструкция по настройке сервиса `llm-chatbot.service`
+
+1. **Создание файла сервиса**  
+   Откройте файл для редактирования:  
+   ```bash
+   sudo nano /etc/systemd/system/llm-chatbot.service
+   ```
+
+2. **Вставьте конфигурацию**  
+   Скопируйте и вставьте следующий текст (убедитесь, что пути соответствуют вашей системе):  
+   ```ini
+   [Unit]
+   Description=LLM Chatbot Service
+   After=network.target
+
+   [Service]
+   User=my_user
+   Group=my_user
+   WorkingDirectory=/home/my_user/llm-pre1
+   Environment="PATH=/home/my_user/llm-pre1/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+   ExecStart=/home/my_user/llm-pre1/venv/bin/uvicorn chatbot_web:app --host 0.0.0.0 --port 8000 --workers 1
+   Restart=always
+   RestartSec=5
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+   Сохраните файл (`Ctrl+O`, `Enter`, `Ctrl+X`).
+
+3. **Активация сервиса**  
+   Выполните команды:  
+   ```bash
+   sudo systemctl daemon-reload          # Перезагрузить конфигурации systemd
+   sudo systemctl enable llm-chatbot     # Включить автозапуск
+   sudo systemctl start llm-chatbot      # Запустить сервис
+   ```
+
+4. **Проверка статуса**  
+   Убедитесь, что сервис работает:  
+   ```bash
+   sudo systemctl status llm-chatbot
+   ```
+   - Если статус `active (running)`, сервис работает корректно.  
+   - Если есть ошибки, проверьте логи:  
+     ```bash
+     journalctl -u llm-chatbot -f
+     ```
+

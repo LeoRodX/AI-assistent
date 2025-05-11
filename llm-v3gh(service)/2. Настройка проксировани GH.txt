@@ -1,0 +1,62 @@
+### Краткая инструкция по настройке проксирования в Apache2  
+
+#### **1. Активация модулей Apache**  
+```bash
+sudo a2enmod proxy proxy_http headers ssl
+sudo systemctl restart apache2
+```
+
+#### **2. Настройка виртуального хоста (`/etc/apache2/sites-available/ваш_сайт.conf`)**  
+```apache
+<VirtualHost *:80>
+    ServerName домен.рф
+    RedirectMatch permanent ^/(?!llm/).* https://домен.рф/$1
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName домен.рф
+    SSLEngine On
+    SSLCertificateFile /путь/к/cert.pem
+    SSLCertificateKeyFile /путь/к/privkey.pem
+    SSLCertificateChainFile /путь/к/chain.pem
+
+    # Проксирование /llm/ на бэкенд
+    ProxyPass /llm/ http://192.168.a.b:8000/
+    ProxyPassReverse /llm/ http://192.168.a.b:8000/
+    ProxyPreserveHost On
+
+    <Location /llm/>
+        Require all granted
+        RequestHeader set X-Forwarded-Proto "https"
+        RequestHeader set X-Forwarded-Prefix "/llm"
+    </Location>
+</VirtualHost>
+```
+
+#### **3. Проверка и перезагрузка Apache**  
+```bash
+sudo apache2ctl configtest  # Проверка синтаксиса
+sudo systemctl restart apache2
+sudo systemctl status apache2  # Убедиться, что сервер работает
+```
+
+#### **4. Проверка работы прокси**  
+```bash
+curl -k -v https://домен.рф/llm/
+```
+- `-k` — игнорировать ошибки SSL (если сертификат самоподписанный).  
+- `-v` — подробный вывод (полезно для отладки).  
+
+#### **5. Дополнительно**  
+- **Фаерволл:**  
+  ```bash
+  sudo ufw allow 80/tcp
+  sudo ufw allow 443/tcp
+  ```  
+- **Логи:**  
+  Проверьте ошибки в `/var/log/apache2/error.log`, если прокси не работает.  
+
+- **Backend:**  
+  Убедитесь, что приложение на `192.168.a.b:8000` доступно изнутри сети и обрабатывает запросы с префиксом `/llm/`.  
+
+Готово! После настройки приложение должно быть доступно по `https://домен.рф/llm/`.
